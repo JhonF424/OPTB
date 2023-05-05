@@ -1,0 +1,146 @@
+Explicación de la prueba Frontend: 
+
+El componente tiene la posibilidad de añadir columnas a criterio, esto se logra a través de arreglos 
+que contienen las columnas.
+
+Un arreglo de columnas contiene todas las columnas que se pueden elegir, y otro arreglo contiene
+las columnas que ya están desplegadas en la tabla. Así cuando el componente carga los datos del API
+brinda una lista de columnas que ya están mostradas por defecto, y cuales se pueden mostrar. 
+
+
+Para los filtros, se tiene un método applyFilter() el cual recibe como parámetro el valor por el cual 
+se desea filtrar el contenido de la tabla, para el ejemplo se tienen filtros por género de los personajes, 
+y el año de nacimiento de los personajes. 
+
+Cuando el componente se carga, revisa que no haya un filtro aplicado y entonces carga toda la data en la tabla.
+Si se selecciona un filtro, se crea una nueva data con el filtro aplicado, y ahora el componente carga esa data 
+en la tabla.
+
+El método addColumn() hace uso de los arreglos anteriormente descritos, valida que la columna que se quiere agregar 
+no se haya mostrado ya, y entonces la manda al arreglo displayedColumns, en el cual el componente la tomará para mostrarla
+en la tabla.
+
+El método loadPage() trae la siguiente página del API, y los métodos previousPage() y nextPage() llaman al método 
+loadPage(), pasándole como parámetro los URL de las páginas (Que son provistos por el API en el response).
+
+Para este ejemplo se utilizó el API de Star Wars, con la información de los personajes. 
+https://swapi.dev/api/people/
+
+
+
+
+
+Explicación de la prueba Backend:
+
+El modelo de la base de datos hace uso de una tabla maestra llamada Ciudad, dado que su información es utilizada por 
+otras tablas como Cliente y Viaje, por lo que podemos utilizar esa información en diferentes lugares.
+
+Del cliente obtenemos toda su información, y sus preferencias estarán dadas por las ciudades más frecuentes a las 
+que viaja. 
+
+La tabla de reserva nos permite dejar un viaje separado sin tener que pagarlo todo en el instante, por eso tiene un atributo
+llamado fechaLimite, además la tabla tiene la información del método de pago que se usa para abonar al monto. 
+
+Cuando una reserva es pagada en su totaliad, entonces pasa a ser una compra, la cual se asume como vuelo tomado ya que 
+el viaje ha sido pagado en su totalidad.
+
+La tabla intermedia ReservaViaje, nos permite asociar un cliente con muchas reservas, y una reserva con muchos clientes,
+esto nos da la posibiliad de mantener una trazabilidad y crear unos filtros que nos permitan obtener de forma clara la 
+información sobre los viajes y los clientes. Adicional permite consultar las reservas que aún no han sido pagadas dando 
+como opción al cliente de pagar en fechas posteriores.
+
+La base de datos está hecha en SQL Server 19, todas las consultas que se requieren arrojan la información de manera correcta.
+
+Para el paso a paso del funcionamiento tenemos lo siguiente: 
+
+1. Inicio del programa
+2. Mostrar mensaje de bienvenida al cliente
+3. Mostrar las diferentes opciones de viajes disponibles en la compañía (lista de viajes)
+4. Pedir al cliente que seleccione una opción de viaje
+5. Guardar la opción de viaje seleccionada por el cliente
+6. Pedir al cliente que ingrese sus preferencias de viaje (fechas, destinos, tipo de viaje, etc.)
+7. Guardar las preferencias de viaje del cliente
+8. Pedir al cliente que ingrese sus datos personales (nombres, apellidos, edad, email, teléfono)
+9. Guardar los datos personales del cliente
+10. Confirmar la información ingresada por el cliente
+11. Pedir al cliente que confirme su reserva
+12. Si el cliente confirma su reserva, continuar con la siguiente acción, de lo contrario regresar al paso 5
+13. Pedir al cliente que seleccione un método de pago
+14. Guardar el método de pago seleccionado por el cliente
+15. Calcular el monto total de la reserva (valor del viaje + impuestos + cargos adicionales, si los hubiera)
+16. Mostrar al cliente el monto total de su reserva y pedir que confirme el pago
+17. Si el cliente confirma el pago, generar la reserva y mostrar un mensaje de confirmación, de lo contrario regresar al paso 13
+18. Guardar la reserva del cliente
+19. Finalizar el programa
+
+Decidí poner el registro del cliente luego de seleccionar el viaje, porque cuando un sitio pide registro de usuario
+antes de poder ver lo que el negocio ofrece, afecta enormemente la experiencia del usuario. 
+
+Para el pseudocódigo en PSeint:
+
+
+Algoritmo PruebaBack
+	Imprimir "Bienvenido a Viajes Opi Travel"
+	
+	Escribir "Tenemos una oferta de viajes amplia, caracterizada por"
+	Escribir "Viajes turísticos, viajes de negocios, viajes vacaionales, etc"
+	definir s Como Caracter
+	Mientras s <> "S" Hacer
+		Escribir "1. Viaje a Santa Marta $1480000"
+		Escribir "2. Viaje de negocios a Nueva York $3000000"
+		Escribir "3. Viaje de aventura por el Amazonas $2500000"
+		Escribir "4. Vacaciones relajantes en San Andrés $1250000"
+		
+		Escribir "Elija una de las opciones"
+		leer opt
+		
+		Escribir "¿Está seguro de querer reservar el viaje ", opt, "?"
+		Escribir "S/N"
+		leer s
+	Fin Mientras
+	Imprimir "por favor ingrese los siguientes datos:"
+	definir nombre, apellido, email, telefono Como Caracter
+	Definir edad, opt Como Entero
+	Escribir "Nombre"
+	leer nombre
+	Escribir "Apellido"
+	leer apellido
+	Escribir "Edad"
+	leer edad
+	Escribir "email"
+	leer email
+	Escribir "teléfono"
+	leer telefono
+	definir mp, total Como Entero
+	Mientras s <> "S" Hacer
+		Escribir "Seleccione un método de pago:"
+		Escribir "1. Efectivo (Comisión 0%)"
+		Escribir "2. Débito (Comisión 0.7%)"
+		Escribir "3. Crédito (Comisión 3%)"
+		
+		leer mp
+		Escribir "Escogió el método ", mp
+		Segun mp Hacer
+			mp == 1:
+				total = 1480000
+			mp == 2:
+				total = total + (total * 0.007)
+			mp == 3:
+				total = total + (total * 0.03)
+			De Otro Modo:
+				Escribir "Seleccione una opción válida"
+		Fin Segun
+		
+		Escribir "El valor de la reserva será de: ", total
+		Escribir "¿Está seguro?"
+		Escribir "S/N"
+		leer s
+	Fin Mientras
+	
+	Escribir "Muchas gracias por su reserva"
+
+FinAlgoritmo
+
+(Cabe resaltar que en el algoritmo de PSeint se resumen un par de cosas que no son importantes para 
+la simulación del flujo del sistema)
+
